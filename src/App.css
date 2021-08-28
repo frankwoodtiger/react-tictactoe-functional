@@ -36,3 +36,16 @@
     transform: rotate(360deg);
   }
 }
+.row {
+  margin: 0;
+  padding: 0;
+}
+
+.box {
+  min-width: 30px;
+  min-height: 30px;
+  display: inline-block;
+  padding: 25px;
+  border: 1px solid white;
+  font-weight: bold;
+}
