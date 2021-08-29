@@ -12,7 +12,8 @@ const DEFAULT_BOX_OBJ = {
 const DEFAULT_GAME_STATE = {
   matrix: [],
   isPlayerOne: true,
-  markStrike: false
+  markStrike: false, // to prevent infinite update loop as we do setState call in componentDidUpdate
+  isGameFinished: false
 };
 
 for (let i = 0; i < DEFAULT_DIMENSION; i++) {
@@ -35,14 +36,15 @@ class TicTacToe extends React.Component {
         this.markWinStrike(newMatrix);
         return {
           matrix: newMatrix, 
-          markStrike: !prevState.markStrike
+          markStrike: !prevState.markStrike,
+          isGameFinished: true
         }
       });
     }
   }
 
   boxOnClickHandler(rowIdx, colIdx) {
-    if (!this.isGameFinished() && this.state.matrix[rowIdx][colIdx].boxState === DEFAULT_BOX_STATE) {
+    if (!this.state.isGameFinished && this.state.matrix[rowIdx][colIdx].boxState === DEFAULT_BOX_STATE) {
       this.setState((previousState, props) => {
         let newMatrix = previousState.matrix.map((row) => row.slice());
         newMatrix[rowIdx][colIdx].boxState = previousState.isPlayerOne;
@@ -130,10 +132,6 @@ class TicTacToe extends React.Component {
     }
 
     return;
-  }
-
-  isGameFinished() {
-    return this.state.matrix.every(row => row.every(boxObj => boxObj.boxState !== DEFAULT_BOX_OBJ.boxState)) || this.detectWinStrike();
   }
 
   render() {
