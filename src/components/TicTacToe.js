@@ -3,7 +3,7 @@ import '../App.css';
 import { getSymbol } from './utils'
 import Box from './Box'
 
-const DEFAULT_DIMENSION = 3;
+const DEFAULT_DIMENSION = 7;
 const DEFAULT_BOX_STATE = null;
 const DEFAULT_BOX_OBJ = {
   boxState: DEFAULT_BOX_STATE,
@@ -100,8 +100,10 @@ class TicTacToe extends React.Component {
     return (
       <div className="App">
         <header className="App-header">
-          <div>Tic Tac Toe</div>
-          <div>Current Turn: {getSymbol(this.state.isPlayerOne)}</div>
+          <div className="App-text">
+            <div>Tic Tac Toe</div>
+            <div>Current Turn: {getSymbol(this.state.isPlayerOne)}</div>
+          </div>
           <div>
             {this.state.matrix.map((row, rowIdx) => {
               return (
