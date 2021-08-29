@@ -12,7 +12,6 @@ const DEFAULT_BOX_OBJ = {
 const DEFAULT_GAME_STATE = {
   matrix: [],
   isPlayerOne: true,
-  markStrike: false, // to prevent infinite update loop as we do setState call in componentDidUpdate
   isGameFinished: false
 };
 
@@ -30,15 +29,12 @@ class TicTacToe extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.detectWinStrike() && !prevState.markStrike) {
-      this.setState((previousState, props) => {
-        let newMatrix = previousState.matrix.map((row) => row.slice());
-        this.markWinStrike(newMatrix);
-        return {
-          matrix: newMatrix, 
-          markStrike: !prevState.markStrike,
-          isGameFinished: true
-        }
+    let newMatrix = prevState.matrix.map((row) => row.slice());
+    let hasWinStrike = this.detectAndMarkWinStrike(newMatrix);
+    if (!prevState.isGameFinished && hasWinStrike) {
+      this.setState({
+        matrix: newMatrix,
+        isGameFinished: true
       });
     }
   }
@@ -60,46 +56,12 @@ class TicTacToe extends React.Component {
     this.setState(JSON.parse(JSON.stringify(DEFAULT_GAME_STATE)));
   }
 
-  detectWinStrike() {
-    // Horizontal
-    for (let i = 0; i < DEFAULT_DIMENSION; i++) {
-      if (this.state.matrix[i].reduce((acc, boxObj) => acc && boxObj.boxState !== DEFAULT_BOX_STATE && boxObj.boxState === this.state.matrix[i][0].boxState, true)) {
-        return true;
-      }
-    }
-    
-    // Vertical
-    for (let i = 0; i < DEFAULT_DIMENSION; i++) {
-      let vertical = [];
-      for (let j = 0; j < DEFAULT_DIMENSION; j++) {
-        vertical.push(this.state.matrix[j][i].boxState);
-      }
-      if (vertical.every(boxState => boxState !== DEFAULT_BOX_STATE && boxState === vertical[0])) {
-        return true;
-      }
-    }
-
-    // Diagonal
-    let diagonal1 = [];
-    let diagonal2 = [];
-    for (let i = 0; i < DEFAULT_DIMENSION; i++) {
-      diagonal1.push(this.state.matrix[i][i].boxState);
-      diagonal2.push(this.state.matrix[i][DEFAULT_DIMENSION - 1 - i].boxState);
-    }
-    if (diagonal1.every(boxState => boxState !== DEFAULT_BOX_STATE && boxState === diagonal1[0]) ||
-      diagonal2.every(boxState => boxState !== DEFAULT_BOX_STATE && boxState === diagonal2[0])) {
-        return true;
-    }
-
-    return false;
-  }
-
-  markWinStrike(matrix) {
+  detectAndMarkWinStrike(matrix) {
     // Horizontal
     for (let i = 0; i < DEFAULT_DIMENSION; i++) {
       if (matrix[i].reduce((acc, boxObj) => acc && boxObj.boxState !== DEFAULT_BOX_STATE && boxObj.boxState === matrix[i][0].boxState, true)) {
         matrix[i].forEach(boxObj => boxObj.color = true);
-        return;
+        return true;
       }
     }
 
@@ -111,7 +73,7 @@ class TicTacToe extends React.Component {
       }
       if (vertical.every(boxObj => boxObj.boxState !== DEFAULT_BOX_STATE && boxObj.boxState === vertical[0].boxState)) {
         vertical.forEach(boxObj => boxObj.color = true);
-        return;
+        return true;
       }
     }
 
@@ -124,14 +86,14 @@ class TicTacToe extends React.Component {
     }
     if (diagonal1.every(boxObj => boxObj.boxState !== DEFAULT_BOX_STATE && boxObj.boxState === diagonal1[0].boxState)) {
       diagonal1.forEach(boxObj => boxObj.color = true);
-      return;
+      return true;
     }
     if (diagonal2.every(boxObj => boxObj.boxState !== DEFAULT_BOX_STATE && boxObj.boxState === diagonal2[0].boxState)) {
       diagonal2.forEach(boxObj => boxObj.color = true);
-      return;
+      return true;
     }
 
-    return;
+    return false;
   }
 
   render() {
