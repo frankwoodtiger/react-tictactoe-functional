@@ -7,11 +7,11 @@ const DEFAULT_DIMENSION = 3;
 const DEFAULT_BOX_STATE = null;
 
 const createDefaultGameState = (dimension) => {
-  const DEFAULT_BOX_OBJ = {
+  const defaultBoxObj = {
     boxState: DEFAULT_BOX_STATE,
     color: false
   };
-  const DEFAULT_GAME_STATE = {
+  const defaultGameState = {
     matrix: [],
     isPlayerOne: true,
     isGameFinished: false,
@@ -20,12 +20,12 @@ const createDefaultGameState = (dimension) => {
   };
   
   for (let i = 0; i < dimension; i++) {
-    DEFAULT_GAME_STATE.matrix.push([]);
+    defaultGameState.matrix.push([]);
     for (let j = 0; j < dimension; j++) {
-      DEFAULT_GAME_STATE.matrix[i].push({...DEFAULT_BOX_OBJ});
+      defaultGameState.matrix[i].push({...defaultBoxObj});
     }
   }
-  return DEFAULT_GAME_STATE;
+  return defaultGameState;
 }
 
 class TicTacToe extends React.Component {
@@ -34,11 +34,11 @@ class TicTacToe extends React.Component {
     this.state = JSON.parse(JSON.stringify(createDefaultGameState(DEFAULT_DIMENSION)));
     this.restartOnClickHandler = this.restartOnClickHandler.bind(this);
     this.resetDimensionOnClickHandler = this.resetDimensionOnClickHandler.bind(this);
-    this.dimensionRef = React.createRef();
   }
 
   componentDidUpdate(prevProps, prevState) {
-    // only compute when dimension are the same, to avoid null pointer when resetting dimension
+    // Only compute when dimension are the same, to avoid null pointer when resetting dimension
+    // Also, we do not need to detect win strike on reset
     if (prevState.dimension === this.state.dimension) {
       let newMatrix = prevState.matrix.map((row) => row.slice());
       let hasWinStrike = this.detectAndMarkWinStrike(newMatrix);
@@ -70,7 +70,10 @@ class TicTacToe extends React.Component {
 
   resetDimensionOnClickHandler(e) {
     e.preventDefault();
-    this.setState(JSON.parse(JSON.stringify(createDefaultGameState(this.dimensionRef.current.value))));
+    const newDimension = e.target.elements["dimension-input"].value;
+    if (newDimension !== '') {
+      this.setState(JSON.parse(JSON.stringify(createDefaultGameState(newDimension))));
+    }
   }
 
   detectAndMarkWinStrike(matrix) {
@@ -136,11 +139,12 @@ class TicTacToe extends React.Component {
           </div>
           <div>
             <button onClick={this.restartOnClickHandler}>Restart</button>
-            <button className={this.state.showDimensionControl ? "hide" : ""}
+            <button className={this.state.showDimensionControl ? "hide" : ''}
               onClick={() => this.setState({ showDimensionControl: true })}>Set Dimension</button>
-            <form className={`dimension-group ${this.state.showDimensionControl ? "" : "hide"}`}
+            <form className={`dimension-group ${!this.state.showDimensionControl ? "hide" : ''}`}
               onSubmit={(e) => this.resetDimensionOnClickHandler(e)}>
-              <input type="text" defaultValue={this.state.dimension} ref={this.dimensionRef}/>
+              <input name="dimension-input" type="text" defaultValue={this.state.dimension}
+                onKeyUp={(e) => e.target.value = e.target.value.replace(/\D+/,'')}/>
               <button type="submit">Confirm</button>
               <button type="button" onClick={() => this.setState({ showDimensionControl: false })}>Cancel</button>
             </form>
