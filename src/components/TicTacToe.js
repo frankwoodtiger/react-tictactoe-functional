@@ -2,6 +2,7 @@ import React from 'react';
 import '../App.css';
 import { getSymbol } from './utils'
 import Box from './Box'
+import DimensionControl from './DimensionControl';
 
 const DEFAULT_DIMENSION = 3;
 const DEFAULT_BOX_STATE = null;
@@ -139,15 +140,11 @@ class TicTacToe extends React.Component {
           </div>
           <div>
             <button onClick={this.restartOnClickHandler}>Restart</button>
-            <button className={this.state.showDimensionControl ? "hide" : ''}
-              onClick={() => this.setState({ showDimensionControl: true })}>Set Dimension</button>
-            <form className={`dimension-group ${!this.state.showDimensionControl ? "hide" : ''}`}
-              onSubmit={(e) => this.resetDimensionOnClickHandler(e)}>
-              <input name="dimension-input" type="text" defaultValue={this.state.dimension}
-                onKeyUp={(e) => e.target.value = e.target.value.replace(/\D+/,'')}/>
-              <button type="submit">Confirm</button>
-              <button type="button" onClick={() => this.setState({ showDimensionControl: false })}>Cancel</button>
-            </form>
+            <DimensionControl showDimensionControl={this.state.showDimensionControl} dimension={this.state.dimension}
+              onClickSetDimension={() => this.setState({ showDimensionControl: true })}
+              onClickSubmitDimension={(e) => this.resetDimensionOnClickHandler(e)}
+              onClickCancel={() => this.setState({ showDimensionControl: false })}
+            />
           </div>
         </header>
       </div>

@@ -1,13 +1,13 @@
 import { getSymbol } from './utils'
 
-const Box = (props) => {
+const Box = ({boxObj, onClickHandler}) => {
     return (
-        <div className="box noselect" onClick={props.onClickHandler}
+        <div className="box noselect" onClick={onClickHandler}
             style={{ 
-                "backgroundColor": props.boxObj.color ? 'yellow' : 'transparent',
-                "color": props.boxObj.color ? 'black' : 'white',
+                "backgroundColor": boxObj.color ? 'yellow' : 'transparent',
+                "color": boxObj.color ? 'black' : 'white',
             }}>
-            {getSymbol(props.boxObj.boxState)}
+            {getSymbol(boxObj.boxState)}
         </div>
     );
 }
