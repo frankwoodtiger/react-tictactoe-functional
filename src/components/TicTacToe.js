@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect } from "react";
 import '../App.css';
 import { getSymbol } from './utils'
 import Box from './Box'
@@ -29,57 +29,56 @@ const createDefaultGameState = (dimension) => {
   return defaultGameState;
 }
 
-class TicTacToe extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = JSON.parse(JSON.stringify(createDefaultGameState(DEFAULT_DIMENSION)));
-    this.restartOnClickHandler = this.restartOnClickHandler.bind(this);
-    this.resetDimensionOnClickHandler = this.resetDimensionOnClickHandler.bind(this);
-  }
+const TicTacToe = props => {
+  const defaultGameState = JSON.parse(JSON.stringify(createDefaultGameState(DEFAULT_DIMENSION)));
+  const [matrix, setMatrix] = useState(defaultGameState.matrix);
+  const [isPlayerOne, setIsPlayerOne] = useState(defaultGameState.isPlayerOne);
+  const [isGameFinished, setIsGameFinished] = useState(defaultGameState.isGameFinished);
+  const [showDimensionControl, setShowDimensionControl] = useState(defaultGameState.showDimensionControl);
+  const [dimension, setDimension] = useState(defaultGameState.dimension);
 
-  componentDidUpdate(prevProps, prevState) {
-    // Only compute when dimension are the same, to avoid null pointer when resetting dimension
-    // Also, we do not need to detect win strike on reset
-    if (prevState.dimension === this.state.dimension) {
-      let newMatrix = prevState.matrix.map((row) => row.slice());
-      let hasWinStrike = this.detectAndMarkWinStrike(newMatrix);
-      if (!prevState.isGameFinished && hasWinStrike) {
-        this.setState({
-          matrix: newMatrix,
-          isGameFinished: true
-        });
-      }
+  useEffect(() => {
+    console.log("in useEffect");
+    let newMatrix = matrix.map((row) => row.slice());
+    let hasWinStrike = detectAndMarkWinStrike(newMatrix);
+    if (!isGameFinished && hasWinStrike) {
+      setMatrix(newMatrix);
+      setIsGameFinished(true);
+    }
+  }, [matrix]);
+
+  const boxOnClickHandler = (rowIdx, colIdx) => {
+    if (!isGameFinished && matrix[rowIdx][colIdx].boxState === DEFAULT_BOX_STATE) {
+      let newMatrix = matrix.map((row) => row.slice());
+      newMatrix[rowIdx][colIdx].boxState = isPlayerOne;
+      setMatrix(newMatrix);
+      setIsPlayerOne(!isPlayerOne);
     }
   }
 
-  boxOnClickHandler(rowIdx, colIdx) {
-    if (!this.state.isGameFinished && this.state.matrix[rowIdx][colIdx].boxState === DEFAULT_BOX_STATE) {
-      this.setState((previousState, props) => {
-        let newMatrix = previousState.matrix.map((row) => row.slice());
-        newMatrix[rowIdx][colIdx].boxState = previousState.isPlayerOne;
-        return {
-          matrix: newMatrix,
-          isPlayerOne: !previousState.isPlayerOne
-        }
-      });
-    }
+  const setStates = (gameState) => {
+    setMatrix(gameState.matrix);
+    setIsPlayerOne(gameState.isPlayerOne);
+    setIsGameFinished(gameState.isGameFinished);
+    setShowDimensionControl(gameState.showDimensionControl);
+    setDimension(gameState.dimension);
   }
 
-  restartOnClickHandler() {
-    this.setState(JSON.parse(JSON.stringify(createDefaultGameState(this.state.dimension))));
+  const restartOnClickHandler = () => {
+    setStates(JSON.parse(JSON.stringify(createDefaultGameState(DEFAULT_DIMENSION))));
   }
 
-  resetDimensionOnClickHandler(e) {
+  const resetDimensionOnClickHandler = (e) => {
     e.preventDefault();
     const newDimension = e.target.elements["dimension-input"].value;
     if (newDimension !== '') {
-      this.setState(JSON.parse(JSON.stringify(createDefaultGameState(newDimension))));
+      setStates(JSON.parse(JSON.stringify(createDefaultGameState(newDimension))));
     }
   }
 
-  detectAndMarkWinStrike(matrix) {
+  const detectAndMarkWinStrike = () => {
     // Horizontal
-    for (let i = 0; i < this.state.dimension; i++) {
+    for (let i = 0; i < dimension; i++) {
       if (matrix[i].reduce((acc, boxObj) => acc && boxObj.boxState !== DEFAULT_BOX_STATE && boxObj.boxState === matrix[i][0].boxState, true)) {
         matrix[i].forEach(boxObj => boxObj.color = true);
         return true;
@@ -87,9 +86,9 @@ class TicTacToe extends React.Component {
     }
 
     // Vertical
-    for (let i = 0; i < this.state.dimension; i++) {
+    for (let i = 0; i < dimension; i++) {
       let vertical = [];
-      for (let j = 0; j < this.state.dimension; j++) {
+      for (let j = 0; j < dimension; j++) {
         vertical.push(matrix[j][i]);
       }
       if (vertical.every(boxObj => boxObj.boxState !== DEFAULT_BOX_STATE && boxObj.boxState === vertical[0].boxState)) {
@@ -101,9 +100,9 @@ class TicTacToe extends React.Component {
     // Diagonal
     let diagonal1 = [];
     let diagonal2 = [];
-    for (let i = 0; i < this.state.dimension; i++) {
+    for (let i = 0; i < dimension; i++) {
       diagonal1.push(matrix[i][i]);
-      diagonal2.push(matrix[i][this.state.dimension - 1 - i]);
+      diagonal2.push(matrix[i][dimension - 1 - i]);
     }
     if (diagonal1.every(boxObj => boxObj.boxState !== DEFAULT_BOX_STATE && boxObj.boxState === diagonal1[0].boxState)) {
       diagonal1.forEach(boxObj => boxObj.color = true);
@@ -117,39 +116,37 @@ class TicTacToe extends React.Component {
     return false;
   }
 
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <div className="App-text">
-            <div>Tic Tac Toe</div>
-            <div>Current Turn: {getSymbol(this.state.isPlayerOne)}</div>
-          </div>
-          <div>
-            {this.state.matrix.map((row, rowIdx) => {
-              return (
-                <div key={`${rowIdx}`} className="row">
-                    {row.map((boxObj, colIdx) => {
-                      return <Box key={`${rowIdx}${colIdx}`}
-                        onClickHandler={this.boxOnClickHandler.bind(this, rowIdx, colIdx)} 
-                        boxObj={boxObj} />
-                    })}
-                </div>
-              )
-            })}
-          </div>
-          <div>
-            <button onClick={this.restartOnClickHandler}>Restart</button>
-            <DimensionControl showDimensionControl={this.state.showDimensionControl} dimension={this.state.dimension}
-              onClickSetDimension={() => this.setState({ showDimensionControl: true })}
-              onClickSubmitDimension={(e) => this.resetDimensionOnClickHandler(e)}
-              onClickCancel={() => this.setState({ showDimensionControl: false })}
-            />
-          </div>
-        </header>
-      </div>
-    )
-  };
+  return (
+    <div className="App">
+      <header className="App-header">
+        <div className="App-text">
+          <div>Tic Tac Toe</div>
+          <div>Current Turn: {getSymbol(isPlayerOne)}</div>
+        </div>
+        <div>
+          {matrix.map((row, rowIdx) => {
+            return (
+              <div key={`${rowIdx}`} className="row">
+                  {row.map((boxObj, colIdx) => {
+                    return <Box key={`${rowIdx}${colIdx}`}
+                      onClickHandler={() => boxOnClickHandler(rowIdx, colIdx)} 
+                      boxObj={boxObj} />
+                  })}
+              </div>
+            )
+          })}
+        </div>
+        <div>
+          <button onClick={restartOnClickHandler}>Restart</button>
+          <DimensionControl showDimensionControl={showDimensionControl} dimension={dimension}
+            onClickSetDimension={() => setShowDimensionControl(true)}
+            onClickSubmitDimension={(e) => resetDimensionOnClickHandler(e)}
+            onClickCancel={() => setShowDimensionControl(false)}
+          />
+        </div>
+      </header>
+    </div>
+  )
 }
 
 export default TicTacToe;

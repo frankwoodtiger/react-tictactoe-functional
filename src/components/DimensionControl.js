@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DimensionControl = (props) => {
+const DimensionControl = props => {
     return (
         <React.Fragment>
             <button className={props.showDimensionControl ? "hide" : ""}

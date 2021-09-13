@@ -1,4 +1,4 @@
-# Tic Tac Toe React App using class component style
+# Tic Tac Toe React App using functional component style
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app). It is a generic Tic Tac Toe with flexible dimension.
 
