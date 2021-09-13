@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import '../App.css';
-import { getSymbol } from './utils'
+import { getSymbol, deepCloneObject } from './utils'
 import Box from './Box'
 import DimensionControl from './DimensionControl';
 
@@ -30,7 +30,7 @@ const createDefaultGameState = (dimension) => {
 }
 
 const TicTacToe = props => {
-  const defaultGameState = JSON.parse(JSON.stringify(createDefaultGameState(DEFAULT_DIMENSION)));
+  const defaultGameState = deepCloneObject(createDefaultGameState(DEFAULT_DIMENSION));
   const [matrix, setMatrix] = useState(defaultGameState.matrix);
   const [isPlayerOne, setIsPlayerOne] = useState(defaultGameState.isPlayerOne);
   const [isGameFinished, setIsGameFinished] = useState(defaultGameState.isGameFinished);
@@ -38,7 +38,6 @@ const TicTacToe = props => {
   const [dimension, setDimension] = useState(defaultGameState.dimension);
 
   useEffect(() => {
-    console.log("in useEffect");
     let newMatrix = matrix.map((row) => row.slice());
     let hasWinStrike = detectAndMarkWinStrike(newMatrix);
     if (!isGameFinished && hasWinStrike) {
@@ -65,14 +64,14 @@ const TicTacToe = props => {
   }
 
   const restartOnClickHandler = () => {
-    setStates(JSON.parse(JSON.stringify(createDefaultGameState(DEFAULT_DIMENSION))));
+    setStates(deepCloneObject(createDefaultGameState(DEFAULT_DIMENSION)));
   }
 
   const resetDimensionOnClickHandler = (e) => {
     e.preventDefault();
     const newDimension = e.target.elements["dimension-input"].value;
     if (newDimension !== '') {
-      setStates(JSON.parse(JSON.stringify(createDefaultGameState(newDimension))));
+      setStates(deepCloneObject(createDefaultGameState(newDimension)));
     }
   }
 
