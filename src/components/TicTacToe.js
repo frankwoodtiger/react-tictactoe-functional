@@ -30,52 +30,40 @@ const createDefaultGameState = (dimension) => {
 }
 
 const TicTacToe = props => {
-  const defaultGameState = deepCloneObject(createDefaultGameState(DEFAULT_DIMENSION));
-  const [matrix, setMatrix] = useState(defaultGameState.matrix);
-  const [isPlayerOne, setIsPlayerOne] = useState(defaultGameState.isPlayerOne);
-  const [isGameFinished, setIsGameFinished] = useState(defaultGameState.isGameFinished);
-  const [showDimensionControl, setShowDimensionControl] = useState(defaultGameState.showDimensionControl);
-  const [dimension, setDimension] = useState(defaultGameState.dimension);
+  const [gameState, setGameState] = useState(deepCloneObject(createDefaultGameState(DEFAULT_DIMENSION)));
 
   useEffect(() => {
-    let newMatrix = matrix.map((row) => row.slice());
-    let hasWinStrike = detectAndMarkWinStrike(newMatrix);
-    if (!isGameFinished && hasWinStrike) {
-      setMatrix(newMatrix);
-      setIsGameFinished(true);
+    let newMatrix = gameState.matrix.map((row) => row.slice());
+    if (!gameState.isGameFinished && detectAndMarkWinStrike(newMatrix, gameState.dimension)) {
+      setGameState({
+        ...gameState,
+        matrix: newMatrix,
+        isGameFinished: true
+      });
     }
-  }, [matrix]);
+  }, [gameState]);
 
   const boxOnClickHandler = (rowIdx, colIdx) => {
-    if (!isGameFinished && matrix[rowIdx][colIdx].boxState === DEFAULT_BOX_STATE) {
-      let newMatrix = matrix.map((row) => row.slice());
+    if (!gameState.isGameFinished && gameState.matrix[rowIdx][colIdx].boxState === DEFAULT_BOX_STATE) {
+      let newMatrix = gameState.matrix.map((row) => row.slice());
       newMatrix[rowIdx][colIdx].boxState = isPlayerOne;
-      setMatrix(newMatrix);
-      setIsPlayerOne(!isPlayerOne);
+      setGameState({
+        ...gameState,
+        matrix: newMatrix,
+        isPlayerOne: !isPlayerOne
+      });
     }
-  }
-
-  const setStates = (gameState) => {
-    setMatrix(gameState.matrix);
-    setIsPlayerOne(gameState.isPlayerOne);
-    setIsGameFinished(gameState.isGameFinished);
-    setShowDimensionControl(gameState.showDimensionControl);
-    setDimension(gameState.dimension);
-  }
-
-  const restartOnClickHandler = () => {
-    setStates(deepCloneObject(createDefaultGameState(DEFAULT_DIMENSION)));
   }
 
   const resetDimensionOnClickHandler = (e) => {
     e.preventDefault();
     const newDimension = e.target.elements["dimension-input"].value;
     if (newDimension !== '') {
-      setStates(deepCloneObject(createDefaultGameState(newDimension)));
+      setGameState(deepCloneObject(createDefaultGameState(newDimension)));
     }
   }
 
-  const detectAndMarkWinStrike = () => {
+  const detectAndMarkWinStrike = (matrix, dimension) => {
     // Horizontal
     for (let i = 0; i < dimension; i++) {
       if (matrix[i].reduce((acc, boxObj) => acc && boxObj.boxState !== DEFAULT_BOX_STATE && boxObj.boxState === matrix[i][0].boxState, true)) {
@@ -115,6 +103,8 @@ const TicTacToe = props => {
     return false;
   }
 
+  const { matrix, isPlayerOne, showDimensionControl, dimension } = gameState;
+
   return (
     <div className="App">
       <header className="App-header">
@@ -136,11 +126,11 @@ const TicTacToe = props => {
           })}
         </div>
         <div>
-          <button onClick={restartOnClickHandler}>Restart</button>
+          <button onClick={() => setGameState(deepCloneObject(createDefaultGameState(DEFAULT_DIMENSION)))}>Restart</button>
           <DimensionControl showDimensionControl={showDimensionControl} dimension={dimension}
-            onClickSetDimension={() => setShowDimensionControl(true)}
+            onClickSetDimension={() => setGameState({ ...gameState, showDimensionControl: true })}
             onClickSubmitDimension={(e) => resetDimensionOnClickHandler(e)}
-            onClickCancel={() => setShowDimensionControl(false)}
+            onClickCancel={() => setGameState({ ...gameState, showDimensionControl: false })}
           />
         </div>
       </header>
