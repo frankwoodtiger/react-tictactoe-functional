@@ -5,8 +5,4 @@ const getSymbol = (boxState) => {
     return '\u00A0';
 }
 
-const deepCloneObject = (obj) => {
-    return JSON.parse(JSON.stringify(obj));
-};
-
-export { getSymbol, deepCloneObject };
+export { getSymbol };

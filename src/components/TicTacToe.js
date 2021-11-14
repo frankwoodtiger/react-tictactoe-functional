@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import '../App.css';
-import { getSymbol, deepCloneObject } from './utils'
+import { getSymbol } from './utils'
 import Box from './Box'
 import DimensionControl from './DimensionControl';
 
@@ -30,10 +30,14 @@ const createDefaultGameState = (dimension) => {
 }
 
 const TicTacToe = props => {
-  const [gameState, setGameState] = useState(deepCloneObject(createDefaultGameState(DEFAULT_DIMENSION)));
+  const [gameState, setGameState] = useState(createDefaultGameState(DEFAULT_DIMENSION));
 
   useEffect(() => {
+    // Creating a deep copy of current matrix to force react to rerender, however, 
+    // this will make React to rerender the whole matrix on single cell change
+    // since deep copy means newMatrix is a different reference every time.
     let newMatrix = gameState.matrix.map((row) => row.slice());
+
     if (!gameState.isGameFinished && detectAndMarkWinStrike(newMatrix, gameState.dimension)) {
       setGameState({
         ...gameState,
@@ -45,6 +49,8 @@ const TicTacToe = props => {
 
   const boxOnClickHandler = (rowIdx, colIdx) => {
     if (!gameState.isGameFinished && gameState.matrix[rowIdx][colIdx].boxState === DEFAULT_BOX_STATE) {
+      // Another deep copy, have potential performance issue on large matrix since it will rerender the whole
+      // matrix on single cells changes
       let newMatrix = gameState.matrix.map((row) => row.slice());
       newMatrix[rowIdx][colIdx].boxState = isPlayerOne;
       setGameState({
@@ -59,7 +65,7 @@ const TicTacToe = props => {
     e.preventDefault();
     const newDimension = e.target.elements["dimension-input"].value;
     if (newDimension !== '') {
-      setGameState(deepCloneObject(createDefaultGameState(newDimension)));
+      setGameState(createDefaultGameState(newDimension));
     }
   }
 
@@ -126,7 +132,7 @@ const TicTacToe = props => {
           })}
         </div>
         <div>
-          <button onClick={() => setGameState(deepCloneObject(createDefaultGameState(DEFAULT_DIMENSION)))}>Restart</button>
+          <button onClick={() => setGameState(createDefaultGameState(dimension))}>Restart</button>
           <DimensionControl showDimensionControl={showDimensionControl} dimension={dimension}
             onClickSetDimension={() => setGameState({ ...gameState, showDimensionControl: true })}
             onClickSubmitDimension={(e) => resetDimensionOnClickHandler(e)}
