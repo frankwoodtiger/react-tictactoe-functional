@@ -49,14 +49,16 @@ const TicTacToe = props => {
 
   const boxOnClickHandler = (rowIdx, colIdx) => {
     if (!gameState.isGameFinished && gameState.matrix[rowIdx][colIdx].boxState === DEFAULT_BOX_STATE) {
-      // Another deep copy, have potential performance issue on large matrix since it will rerender the whole
-      // matrix on single cells changes
-      let newMatrix = gameState.matrix.map((row) => row.slice());
-      newMatrix[rowIdx][colIdx].boxState = isPlayerOne;
-      setGameState({
-        ...gameState,
-        matrix: newMatrix,
-        isPlayerOne: !isPlayerOne
+      setGameState((prevGameState) => {
+        // Another deep copy, have potential performance issue on large matrix since it will rerender the whole
+        // matrix on single cells changes
+        let newMatrix = prevGameState.matrix.map((row) => row.slice());
+        newMatrix[rowIdx][colIdx].boxState = prevGameState.isPlayerOne;
+        return {
+          ...prevGameState,
+          matrix: newMatrix,
+          isPlayerOne: !prevGameState.isPlayerOne
+        }
       });
     }
   }
